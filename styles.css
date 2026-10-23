@@ -1,0 +1,233 @@
+:root {
+  /* Club palette (flyer): dark green, club green, lime, ceibo red. */
+  --bg: #06120c;
+  --club: #0b2e1a;
+  --lime: #8aaf3b;
+  --ceibo: #c8102e;
+  --fg: #f5f5f5;
+  --muted: #b5b5b5;
+  --accent: var(--lime);
+  --valid: #0f8a3c;
+  --invalid: #c62828;
+  --amber: #f5a300;
+  --footer-h: 2.25rem;
+  --brand-h: 3.25rem;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* Ceibos frame: logo bar on top, lime and red lines like the flyer's banner. */
+.brand {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  height: calc(var(--brand-h) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: linear-gradient(90deg, var(--bg), var(--club));
+  border-bottom: 3px solid var(--ceibo);
+  box-shadow: inset 0 -3px 0 var(--lime);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.brand img { height: 2.4rem; width: auto; }
+
+main {
+  position: fixed;
+  inset: calc(var(--brand-h) + env(safe-area-inset-top)) 0 calc(var(--footer-h) + env(safe-area-inset-bottom)) 0;
+}
+
+.screen { position: absolute; inset: 0; }
+.screen[hidden] { display: none; }
+
+/* Text panels (start, errors). */
+.panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  overflow-y: auto;
+  font-size: 1.1rem;
+  line-height: 1.45;
+}
+.panel h1 { margin: 0; font-size: 1.8rem; line-height: 1.15; }
+.panel p { margin: 0; }
+.lead { font-size: 1.3rem; }
+.start-logo { align-self: center; width: 8rem; height: auto; }
+.detail { color: var(--muted); font-size: 0.95rem; }
+.panel ol { margin: 0; padding-left: 1.4rem; }
+.panel li { margin: 0.25rem 0; }
+code { background: #2a2a2a; padding: 0.05rem 0.35rem; border-radius: 4px; }
+
+.badge {
+  align-self: flex-start;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge-error { background: var(--invalid); color: #fff; }
+
+.big-button {
+  margin-top: 1rem;
+  width: 100%;
+  min-height: 5.5rem;
+  border: 0;
+  border-radius: 1.25rem;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.big-button:active { filter: brightness(0.85); }
+
+/* Live camera view. */
+.scan { background: #000; overflow: hidden; }
+.scan video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.viewfinder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(72vw, 52vh);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 5px solid var(--lime);
+  border-radius: 1.25rem;
+  box-shadow: 0 0 0 3px var(--ceibo), 0 0 0 200vmax rgba(6, 18, 12, 0.45);
+}
+.scan-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.25rem;
+  margin: 0 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.6);
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+/* Full-screen verdict. */
+.result {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+}
+.result.verdict-VALID { background: var(--valid); }
+.result.verdict-EXPIRED,
+.result.verdict-INVALID { background: var(--invalid); }
+.result.verdict-NOT_YET { background: var(--amber); color: #1a1200; }
+
+/* Ceibos frame around the verdict: logo and club name, a double rule, formal serif lettering. */
+.result-frame {
+  width: min(100%, 34rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 1.25rem 1.75rem;
+  border: 3px solid currentColor;
+  border-radius: 1.25rem;
+  outline: 1px solid currentColor;
+  outline-offset: 6px;
+  background: rgba(0, 0, 0, 0.12);
+}
+.result.verdict-NOT_YET .result-frame { background: rgba(255, 255, 255, 0.18); }
+.result-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid currentColor;
+  font-size: clamp(0.85rem, 3.6vw, 1.05rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.result-brand img { height: 2.6rem; width: auto; }
+.result-icon svg {
+  display: block;
+  width: clamp(4rem, 22vw, 7rem);
+  height: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.result-word {
+  font-family: Georgia, "Times New Roman", "Noto Serif", serif;
+  font-size: clamp(2.4rem, 11vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+.result-detail {
+  font-family: Georgia, "Times New Roman", "Noto Serif", serif;
+  font-size: clamp(1.2rem, 5.2vw, 2rem);
+  font-style: italic;
+  line-height: 1.3;
+}
+.result-hint { position: absolute; bottom: 3.25rem; font-size: 1rem; opacity: 0.85; }
+
+/* Always-visible phone clock, so a wrong date/time is noticeable. */
+footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  height: calc(var(--footer-h) + env(safe-area-inset-bottom));
+  padding: 0 0.75rem env(safe-area-inset-bottom);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: var(--bg);
+  border-top: 1px solid var(--club);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.clock { overflow: hidden; text-overflow: ellipsis; }
+.offline-status { flex-shrink: 0; }

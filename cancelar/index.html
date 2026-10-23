@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es-UY">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Cancelar reserva · Ceibos</title>
+  <link rel="icon" href="../icons/icon-192.png" type="image/png">
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f4f6f3; color: #1b2a1f; }
+    header { display: flex; align-items: center; gap: .6rem; background: #0b2e1a; color: #fff; font-weight: 700;
+      padding: .7rem 1rem; border-bottom: 4px solid #8aaf3b; }
+    main { max-width: 32rem; margin: 1.2rem auto; background: #fff; border-radius: 10px; padding: 1.1rem 1.25rem; }
+    h1 { font-size: 1.3rem; margin: .2rem 0 .8rem; }
+    li { margin: .35rem 0; }
+    button { font: inherit; font-size: 1.05rem; font-weight: 700; color: #fff; background: #c8102e; border: 0;
+      border-radius: 8px; padding: .75rem 1.1rem; cursor: pointer; }
+    button[disabled] { opacity: .55; cursor: default; }
+    .muted { color: #6b7280; font-size: .9rem; }
+    .done { color: #0f8a3c; font-weight: 700; }
+  </style>
+  <script type="module">
+    import { CANCEL_API } from '../config.js';
+    const $ = id => document.getElementById(id);
+    const q = new URLSearchParams(location.search);
+    const link = { a: q.get('a'), id: q.get('id'), t: q.get('t') };
+    const say = (text, cls) => { $('msg').textContent = text; $('msg').className = cls || ''; };
+
+    // Calls without the browser's Google login (credentials: 'omit'): Apps Script pages break on
+    // browsers signed into several accounts; its JSON answers don't.
+    async function load() {
+      try {
+        const url = `${CANCEL_API}?a=${encodeURIComponent(link.a || '')}&id=${encodeURIComponent(link.id || '')}&t=${encodeURIComponent(link.t || '')}`;
+        const info = await (await fetch(url, { credentials: 'omit' })).json();
+        if (info.error) return say(info.error);
+        const several = info.bookings.length > 1;
+        $('title').textContent = several ? '¿Cancelar estas reservas?' : '¿Cancelar esta reserva?';
+        $('note').textContent = several
+          ? 'Se borran del calendario y quedan como SUSPENDIDO en el calendario de uso de canchas.'
+          : 'Se borra del calendario y queda como SUSPENDIDO en el calendario de uso de canchas.';
+        $('list').replaceChildren(...info.bookings.map(b => Object.assign(document.createElement('li'), { textContent: b })));
+        if (info.started) $('started').textContent = `${info.started} reserva(s) de este envío ya empezaron y no se cancelan.`;
+        $('ask').hidden = false;
+        say('');
+      } catch (e) {
+        say('No se pudo cargar la reserva. Revisá la conexión y volvé a abrir el link.');
+      }
+    }
+
+    $('go').addEventListener('click', async () => {
+      $('go').disabled = true;
+      $('go').textContent = 'Cancelando…';
+      say('Puede tardar hasta un minuto: no cierres la página.', 'muted');
+      try {
+        // text/plain (the default for a string body): no CORS preflight.
+        const r = await (await fetch(CANCEL_API, { method: 'POST', credentials: 'omit', body: JSON.stringify(link) })).json();
+        if (r.error) throw new Error(r.error);
+        $('go').hidden = true;
+        $('note').hidden = true;
+        $('title').textContent = 'Cancelación hecha';
+        say(r.message, 'done');
+      } catch (e) {
+        $('go').disabled = false;
+        $('go').textContent = 'Confirmar cancelación';
+        say(`No se pudo cancelar: ${e.message}`);
+      }
+    });
+    load();
+  </script>
+</head>
+<body>
+  <header><img src="../icons/logo.png" alt="" width="34" height="32"> Campo Deportivo Los Ceibos</header>
+  <main>
+    <section id="ask" hidden>
+      <h1 id="title"></h1>
+      <ul id="list"></ul>
+      <p class="muted" id="started"></p>
+      <p id="note">Se borra del calendario y queda como SUSPENDIDO en el calendario de uso de canchas.</p>
+      <button id="go" type="button">Confirmar cancelación</button>
+    </section>
+    <p id="msg">Cargando…</p>
+  </main>
+</body>
+</html>
